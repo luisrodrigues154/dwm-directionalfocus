@@ -20,9 +20,11 @@ So i made some little functions to give directional focus rather and do **c3 -> 
 - Does not consider floating windows as part of the decision
 
 Tested with:
-- tiled
-- floating
-- Fibonnacci (spiral and dwindle)
+- Tiled
+- Floating
+- Fibonnacci
+- Spiral 
+- Dwindle
 - Gapless grid
 
 
