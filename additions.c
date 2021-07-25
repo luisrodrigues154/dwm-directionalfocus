@@ -10,12 +10,6 @@ focusdown(const Arg *arg){
 	
 	if((c->y + c->h + selmon->gappoh) == selmon->wh) return;
 	
-	// FILE * fp = fopen("/home/waza/Documents/log", "w+");
-	// fprintf(fp, "gappov %d\ngappiv %d\n", selmon->gappov, selmon->gappiv);
-	// fprintf(fp, "c->x %d\nc->w %d\n", c->x, c->w);
-	// fprintf(fp, "c->y %d\nc->h %d\n", c->y, c->h);
-	// fprintf(fp, "ww %d\n", selmon->ww);
-	// fprintf(fp, "targetX %d\ntagetY %d\n", targetX, targetY);
 	for(iter = selmon->clients; iter != NULL; iter = iter->next){
 		if(iter == c ) 		 continue;
 		if(!ISVISIBLE(iter)) continue;
