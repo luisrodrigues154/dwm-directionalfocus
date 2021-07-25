@@ -46,7 +46,7 @@ index a2ac963..c006760 100644
  	{ MODKEY|ShiftMask,             XK_space,  togglefloating, {0} },
  	{ MODKEY,                       XK_0,      view,           {.ui = ~0 } },
 diff --git a/dwm.c b/dwm.c
-index 5e4d494..f5a952b 100644
+index 5e4d494..0bedd78 100644
 --- a/dwm.c
 +++ b/dwm.c
 @@ -169,6 +169,10 @@ static void focus(Client *c);
@@ -60,7 +60,7 @@ index 5e4d494..f5a952b 100644
  static Atom getatomprop(Client *c, Atom prop);
  static int getrootptr(int *x, int *y);
  static long getstate(Window w);
-@@ -2150,3 +2154,159 @@ main(int argc, char *argv[])
+@@ -2150,3 +2154,153 @@ main(int argc, char *argv[])
  	XCloseDisplay(dpy);
  	return EXIT_SUCCESS;
  }
@@ -77,12 +77,6 @@ index 5e4d494..f5a952b 100644
 +	
 +	if((c->y + c->h + selmon->gappoh) == selmon->wh) return;
 +	
-+	// FILE * fp = fopen("/home/waza/Documents/log", "w+");
-+	// fprintf(fp, "gappov %d\ngappiv %d\n", selmon->gappov, selmon->gappiv);
-+	// fprintf(fp, "c->x %d\nc->w %d\n", c->x, c->w);
-+	// fprintf(fp, "c->y %d\nc->h %d\n", c->y, c->h);
-+	// fprintf(fp, "ww %d\n", selmon->ww);
-+	// fprintf(fp, "targetX %d\ntagetY %d\n", targetX, targetY);
 +	for(iter = selmon->clients; iter != NULL; iter = iter->next){
 +		if(iter == c ) 		 continue;
 +		if(!ISVISIBLE(iter)) continue;
