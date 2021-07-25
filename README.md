@@ -3,11 +3,16 @@
 - Just works for the current monitor, not jumping for the other monitors
   - Might consider adding if asked   
 - Does not consider floating windows as part of the decision
-- Tested only with default layout
 
-Bind as shown below in your **config.h**
+Tested with:
+- tiled
+- floating
+- Fibonnacci (spiral and dwindle)
+- Gapless grid
+
+
+Binds ar made as shown below in (using arrows), if you want vim shortcuts, modify it accordingly :) 
 ```
-
 -- snip --
 
 { MODKEY,                       XK_Right,  focusright,     {0} },
@@ -16,6 +21,5 @@ Bind as shown below in your **config.h**
 { MODKEY,                       XK_Up,     focusup,        {0} },
 
 -- snip -- 
-
-
 ```
+

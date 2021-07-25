@@ -1,0 +1,223 @@
+diff --git a/config.def.h b/config.def.h
+index a2ac963..c006760 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -39,11 +39,13 @@ static const int lockfullscreen = 1; /* 1 will force focus on the fullscreen win
+ 
+ static const Layout layouts[] = {
+ 	/* symbol     arrange function */
+-	{ "[]=",      tile },    /* first entry is default */
+-	{ "><>",      NULL },    /* no layout function means floating behavior */
+-	{ "[M]",      monocle },
++	{ "Tiling Mode",      tile },    /* first entry is default */
++	{ "Floating Mode",      NULL },    /* no layout function means floating behavior */
++	{ "Monocle Mode",      monocle },
++	{ "NoGap-Grid Mode", gaplessgrid},
++	{ "Spiral Mode",      spiral},
++	{ "Dwindle Mode",      dwindle}
+ };
+-
+ /* key definitions */
+ #define MODKEY Mod1Mask
+ #define TAGKEYS(KEY,TAG) \
+@@ -67,6 +69,10 @@ static Key keys[] = {
+ 	{ MODKEY,                       XK_b,      togglebar,      {0} },
+ 	{ MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
+ 	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
++	{ MODKEY,                       XK_Right,  focusright,     {0} },
++	{ MODKEY,                       XK_Left,   focusleft,      {0} },
++	{ MODKEY,                       XK_Down,   focusdown,      {0} },
++	{ MODKEY,                       XK_Up,     focusup,        {0} },
+ 	{ MODKEY,                       XK_i,      incnmaster,     {.i = +1 } },
+ 	{ MODKEY,                       XK_d,      incnmaster,     {.i = -1 } },
+ 	{ MODKEY,                       XK_h,      setmfact,       {.f = -0.05} },
+@@ -74,9 +80,13 @@ static Key keys[] = {
+ 	{ MODKEY,                       XK_Return, zoom,           {0} },
+ 	{ MODKEY,                       XK_Tab,    view,           {0} },
+ 	{ MODKEY|ShiftMask,             XK_c,      killclient,     {0} },
++
+ 	{ MODKEY,                       XK_t,      setlayout,      {.v = &layouts[0]} },
+ 	{ MODKEY,                       XK_f,      setlayout,      {.v = &layouts[1]} },
+ 	{ MODKEY,                       XK_m,      setlayout,      {.v = &layouts[2]} },
++	{ MODKEY,                       XK_g,      setlayout,      {.v = &layouts[3]} },
++	{ MODKEY,                       XK_s,      setlayout,      {.v = &layouts[4]} },
++	{ MODKEY,                       XK_d,      setlayout,      {.v = &layouts[5]} },
+ 	{ MODKEY,                       XK_space,  setlayout,      {0} },
+ 	{ MODKEY|ShiftMask,             XK_space,  togglefloating, {0} },
+ 	{ MODKEY,                       XK_0,      view,           {.ui = ~0 } },
+diff --git a/dwm.c b/dwm.c
+index 5e4d494..f5a952b 100644
+--- a/dwm.c
++++ b/dwm.c
+@@ -169,6 +169,10 @@ static void focus(Client *c);
+ static void focusin(XEvent *e);
+ static void focusmon(const Arg *arg);
+ static void focusstack(const Arg *arg);
++static void focusup(const Arg *arg);
++static void focusright(const Arg *arg);
++static void focusdown(const Arg *arg);
++static void focusleft(const Arg *arg);
+ static Atom getatomprop(Client *c, Atom prop);
+ static int getrootptr(int *x, int *y);
+ static long getstate(Window w);
+@@ -2150,3 +2154,159 @@ main(int argc, char *argv[])
+ 	XCloseDisplay(dpy);
+ 	return EXIT_SUCCESS;
+ }
++
++void
++focusdown(const Arg *arg){
++	Client *c = selmon->sel;
++	int targetX = c->x;
++	int targetY = c->y + c->h + selmon->gappih; 
++	Client * iter; 
++	Client * bestCandidate = NULL;
++	int bestDevX = 99999999;
++	int bestDevY = 99999999;
++	
++	if((c->y + c->h + selmon->gappoh) == selmon->wh) return;
++	
++	// FILE * fp = fopen("/home/waza/Documents/log", "w+");
++	// fprintf(fp, "gappov %d\ngappiv %d\n", selmon->gappov, selmon->gappiv);
++	// fprintf(fp, "c->x %d\nc->w %d\n", c->x, c->w);
++	// fprintf(fp, "c->y %d\nc->h %d\n", c->y, c->h);
++	// fprintf(fp, "ww %d\n", selmon->ww);
++	// fprintf(fp, "targetX %d\ntagetY %d\n", targetX, targetY);
++	for(iter = selmon->clients; iter != NULL; iter = iter->next){
++		if(iter == c ) 		 continue;
++		if(!ISVISIBLE(iter)) continue;
++
++		int iterWX = iter->x + iter->w;
++
++		if(iter->y == targetY
++			  || iter->y == (targetY + selmon->gappih)
++			  || iter->y == (targetY + selmon->gappoh)
++			)
++		{
++			int devX = (iter->x > targetX) ? iter->x - targetX : targetX - iter->x;
++			int devY = (iter->y > targetY) ? iter->y - targetY : targetY - iter->y;
++			
++			if((devX < bestDevX && devY < bestDevY) || (devX == bestDevX && devY < bestDevY) || (devX < bestDevX && devY == bestDevY)){
++				bestDevX = devX;
++				bestDevY = devY;
++				bestCandidate = iter;
++			}
++		}
++		
++	}
++	if(bestCandidate) focus(bestCandidate);
++}
++
++void
++focusup(const Arg *arg){
++	Client *c = selmon->sel;
++	int targetX = c->x;
++	int targetY = c->y - selmon->gappih;
++	Client * iter; 
++	Client * bestCandidate = NULL;
++	int bestDevX = 99999999;
++	int bestDevY = 99999999;
++	
++	if(c->y == (selmon->wy + selmon->gappoh)) return;
++	
++	for(iter = selmon->clients; iter != NULL; iter = iter->next){
++		if(iter == c ) 		 continue;
++		if(!ISVISIBLE(iter)) continue;
++
++		int iterWX = iter->x + iter->w;
++		int iterHY = iter->y + iter->h;
++
++		if(iterHY == targetY
++			  || iterHY == (targetY + selmon->gappih)
++			  || iterHY == (targetY + selmon->gappoh)
++			)
++		{
++			int devX = (iter->x > targetX) ? iter->x - targetX : targetX - iter->x;
++			int devY = (iter->y > targetY) ? iter->y - targetY : targetY - iter->y;
++			
++			if((devX < bestDevX && devY < bestDevY) || (devX == bestDevX && devY < bestDevY) || (devX < bestDevX && devY == bestDevY)){
++				bestDevX = devX;
++				bestDevY = devY;
++				bestCandidate = iter;
++			}
++		}
++		
++	}
++	if(bestCandidate) focus(bestCandidate);
++}
++void
++focusleft(const Arg *arg){
++	Client *c = selmon->sel;
++	int targetX = c->x - selmon->gappiv;
++	int targetY = c->y;
++	Client * iter; 
++	Client * bestCandidate = NULL;
++	int bestDevX = 99999999;
++	int bestDevY = 99999999;
++	
++	if(c->x == selmon->gappov) return;
++
++	for(iter = selmon->clients; iter != NULL; iter = iter->next){
++		if(iter == c ) 		 continue;
++		if(!ISVISIBLE(iter)) continue;
++
++		int iterWX = iter->x + iter->w;
++		
++
++		if(iterWX == targetX 
++			|| (iterWX  == (targetX - selmon->gappiv )) 
++			|| (iterWX  == (targetX - selmon->gappov )) 
++			)
++		{
++			int devX = (iter->x > targetX) ? iter->x - targetX : targetX - iter->x;
++			int devY = (iter->y > targetY) ? iter->y - targetY : targetY - iter->y;
++			
++			if((devX < bestDevX && devY < bestDevY) || (devX == bestDevX && devY < bestDevY) || (devX < bestDevX && devY == bestDevY)){
++				bestDevX = devX;
++				bestDevY = devY;
++				bestCandidate = iter;
++			}
++		}
++		
++	}
++	if(bestCandidate) focus(bestCandidate);
++}
++
++void
++focusright(const Arg *arg){
++	Client *c = selmon->sel;
++	int targetX = c->x + c->w + selmon->gappiv;
++	int targetY = c->y;
++	Client * iter; 
++	Client * bestCandidate = NULL;
++	int bestDevX = 99999999;
++	int bestDevY = 99999999;
++	
++	if(c->x == selmon->gappov) return;
++
++	for(iter = selmon->clients; iter != NULL; iter = iter->next){
++		if(iter == c ) 		 continue;
++		if(!ISVISIBLE(iter)) continue;
++
++		int iterWX = iter->x + iter->w;
++		
++
++		if(iter->x == targetX 
++			|| (iter->x  == (targetX - selmon->gappiv )) 
++			|| (iter->x  == (targetX - selmon->gappov )) 
++			)
++		{
++			int devX = (iter->x > targetX) ? iter->x - targetX : targetX - iter->x;
++			int devY = (iter->y > targetY) ? iter->y - targetY : targetY - iter->y;
++			
++			if((devX < bestDevX && devY < bestDevY) || (devX == bestDevX && devY < bestDevY) || (devX < bestDevX && devY == bestDevY)){
++				bestDevX = devX;
++				bestDevY = devY;
++				bestCandidate = iter;
++			}
++		}
++		
++	}
++	if(bestCandidate) focus(bestCandidate);
++}
+\ No newline at end of file

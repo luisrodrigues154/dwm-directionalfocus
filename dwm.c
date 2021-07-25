@@ -2161,78 +2161,152 @@ focusdown(const Arg *arg){
 	int targetX = c->x;
 	int targetY = c->y + c->h + selmon->gappih; 
 	Client * iter; 
-
-	if((c->y + c->h + selmon->gappoh) == selmon->wh) return;
-	if(c->y == (selmon->wh +selmon->gappoh)) targetY += selmon->gappoh;
-	else					   				 targetY += selmon->gappih;
+	Client * bestCandidate = NULL;
+	int bestDevX = 99999999;
+	int bestDevY = 99999999;
 	
+	if((c->y + c->h + selmon->gappoh) == selmon->wh) return;
+	
+	// FILE * fp = fopen("/home/waza/Documents/log", "w+");
+	// fprintf(fp, "gappov %d\ngappiv %d\n", selmon->gappov, selmon->gappiv);
+	// fprintf(fp, "c->x %d\nc->w %d\n", c->x, c->w);
+	// fprintf(fp, "c->y %d\nc->h %d\n", c->y, c->h);
+	// fprintf(fp, "ww %d\n", selmon->ww);
+	// fprintf(fp, "targetX %d\ntagetY %d\n", targetX, targetY);
 	for(iter = selmon->clients; iter != NULL; iter = iter->next){
+		if(iter == c ) 		 continue;
 		if(!ISVISIBLE(iter)) continue;
-		if(iter->x >= targetX && iter->y == targetY){
-				focus(iter);
-				break;
-		}
-	}
 
+		int iterWX = iter->x + iter->w;
+
+		if(iter->y == targetY
+			  || iter->y == (targetY + selmon->gappih)
+			  || iter->y == (targetY + selmon->gappoh)
+			)
+		{
+			int devX = (iter->x > targetX) ? iter->x - targetX : targetX - iter->x;
+			int devY = (iter->y > targetY) ? iter->y - targetY : targetY - iter->y;
+			
+			if((devX < bestDevX && devY < bestDevY) || (devX == bestDevX && devY < bestDevY) || (devX < bestDevX && devY == bestDevY)){
+				bestDevX = devX;
+				bestDevY = devY;
+				bestCandidate = iter;
+			}
+		}
+		
+	}
+	if(bestCandidate) focus(bestCandidate);
 }
 
 void
 focusup(const Arg *arg){
 	Client *c = selmon->sel;
 	int targetX = c->x;
-	int targetY = c->y - selmon->gappih; 
+	int targetY = c->y - selmon->gappih;
 	Client * iter; 
-
+	Client * bestCandidate = NULL;
+	int bestDevX = 99999999;
+	int bestDevY = 99999999;
+	
 	if(c->y == (selmon->wy + selmon->gappoh)) return;
 	
-	targetY -= selmon->gappih;
-	
 	for(iter = selmon->clients; iter != NULL; iter = iter->next){
+		if(iter == c ) 		 continue;
 		if(!ISVISIBLE(iter)) continue;
-		if(iter->x >= targetX && (iter->y + iter->h) == targetY){
-			focus(iter);
-			break;
+
+		int iterWX = iter->x + iter->w;
+		int iterHY = iter->y + iter->h;
+
+		if(iterHY == targetY
+			  || iterHY == (targetY + selmon->gappih)
+			  || iterHY == (targetY + selmon->gappoh)
+			)
+		{
+			int devX = (iter->x > targetX) ? iter->x - targetX : targetX - iter->x;
+			int devY = (iter->y > targetY) ? iter->y - targetY : targetY - iter->y;
+			
+			if((devX < bestDevX && devY < bestDevY) || (devX == bestDevX && devY < bestDevY) || (devX < bestDevX && devY == bestDevY)){
+				bestDevX = devX;
+				bestDevY = devY;
+				bestCandidate = iter;
+			}
 		}
+		
 	}
+	if(bestCandidate) focus(bestCandidate);
 }
 void
 focusleft(const Arg *arg){
 	Client *c = selmon->sel;
 	int targetX = c->x - selmon->gappiv;
-	int targetY = c->y + 10; // 10 for threshold
+	int targetY = c->y;
 	Client * iter; 
-
+	Client * bestCandidate = NULL;
+	int bestDevX = 99999999;
+	int bestDevY = 99999999;
+	
 	if(c->x == selmon->gappov) return;
 
-	targetX -= selmon->gappiv;
-
 	for(iter = selmon->clients; iter != NULL; iter = iter->next){
+		if(iter == c ) 		 continue;
 		if(!ISVISIBLE(iter)) continue;
-		if((iter->x + iter->w) == targetX && (iter->y + iter->h) >= targetY ){
-				focus(iter);
-				break;
+
+		int iterWX = iter->x + iter->w;
+		
+
+		if(iterWX == targetX 
+			|| (iterWX  == (targetX - selmon->gappiv )) 
+			|| (iterWX  == (targetX - selmon->gappov )) 
+			)
+		{
+			int devX = (iter->x > targetX) ? iter->x - targetX : targetX - iter->x;
+			int devY = (iter->y > targetY) ? iter->y - targetY : targetY - iter->y;
+			
+			if((devX < bestDevX && devY < bestDevY) || (devX == bestDevX && devY < bestDevY) || (devX < bestDevX && devY == bestDevY)){
+				bestDevX = devX;
+				bestDevY = devY;
+				bestCandidate = iter;
+			}
 		}
+		
 	}
+	if(bestCandidate) focus(bestCandidate);
 }
 
 void
 focusright(const Arg *arg){
 	Client *c = selmon->sel;
 	int targetX = c->x + c->w + selmon->gappiv;
-	int targetY = c->y + 10; // 10 for threshold
+	int targetY = c->y;
 	Client * iter; 
+	Client * bestCandidate = NULL;
+	int bestDevX = 99999999;
+	int bestDevY = 99999999;
 	
-
-	if(c->x == selmon->gappov) targetX += selmon->gappov;
-	else 					   targetX += selmon->gappiv;
-	
-	if(targetX == selmon->ww) return;
+	if(c->x == selmon->gappov) return;
 
 	for(iter = selmon->clients; iter != NULL; iter = iter->next){
+		if(iter == c ) 		 continue;
 		if(!ISVISIBLE(iter)) continue;
-		if(iter->x == targetX && (iter->y + iter->h) >= targetY ){
-				focus(iter);
-				break;
+
+		int iterWX = iter->x + iter->w;
+		
+
+		if(iter->x == targetX 
+			|| (iter->x  == (targetX - selmon->gappiv )) 
+			|| (iter->x  == (targetX - selmon->gappov )) 
+			)
+		{
+			int devX = (iter->x > targetX) ? iter->x - targetX : targetX - iter->x;
+			int devY = (iter->y > targetY) ? iter->y - targetY : targetY - iter->y;
+			
+			if((devX < bestDevX && devY < bestDevY) || (devX == bestDevX && devY < bestDevY) || (devX < bestDevX && devY == bestDevY)){
+				bestDevX = devX;
+				bestDevY = devY;
+				bestCandidate = iter;
+			}
 		}
+		
 	}
+	if(bestCandidate) focus(bestCandidate);
 }
