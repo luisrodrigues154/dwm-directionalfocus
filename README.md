@@ -1,3 +1,8 @@
+# UNMAINTAINED
+THIS PROJECT IS NOT MAINTAINED ANYMORE! I might maintain it later :(
+ALTERNATIVE: https://github.com/jzbor/patches/blob/master/dwm/dwm-focusdir-6.2.diff
+ISSUE: https://github.com/jzbor/moonwm/issues/3
+
 # Adding directional focus do dwm
 
 So i came accross this problem of having to iterate the stack to reach to a window, for example with the following layout of windows
