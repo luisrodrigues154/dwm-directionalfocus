@@ -1,6 +1,8 @@
 # UNMAINTAINED
 THIS PROJECT IS NOT MAINTAINED ANYMORE! I might maintain it later :(
+
 ALTERNATIVE: https://github.com/jzbor/patches/blob/master/dwm/dwm-focusdir-6.2.diff
+
 ISSUE: https://github.com/jzbor/moonwm/issues/3
 
 # Adding directional focus do dwm
